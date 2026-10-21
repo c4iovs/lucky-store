@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucky Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --ameixa:#2a0f3a;
+    --roxo-900:#3a1650;
+    --roxo-700:#5b2680;
+    --roxo-500:#7a3aa6;
+    --roxo-300:#b794d3;
+    --roxo-100:#efe6f6;
+    --bege-50:#faf6ef;
+    --bege-100:#f3ece0;
+    --bege-200:#e6dccb;
+    --bege-300:#d3c5ad;
+    --branco:#fff;
+    --texto:#241530;
+    --suave:#7a6b86;
+    --erro:#a3243b;
+    --ok:#2f7a4f;
+    --serif:'Cormorant Garamond',Georgia,serif;
+    --sans:'Manrope',system-ui,sans-serif;
+    --sombra:0 1px 2px rgba(42,15,58,.06),0 12px 32px -12px rgba(42,15,58,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:var(--sans);color:var(--texto);min-height:100vh;
+    background:
+      radial-gradient(900px 480px at 85% -10%, rgba(122,58,166,.10), transparent 60%),
+      radial-gradient(700px 400px at -10% 110%, rgba(183,148,211,.14), transparent 60%),
+      var(--bege-50);
+    -webkit-font-smoothing:antialiased;
+  }
+  .hidden{display:none!important}
+  button{font-family:inherit}
+  input{font-family:inherit}
+
+  /* ---------- botões ---------- */
+  .btn{
+    font-weight:700;font-size:.88rem;cursor:pointer;border:1px solid transparent;border-radius:10px;
+    padding:11px 18px;background:var(--roxo-700);color:#fff;transition:background .15s,transform .05s,border-color .15s,color .15s;
+    letter-spacing:.01em;
+  }
+  .btn:hover{background:var(--roxo-900)}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.55;cursor:wait}
+  .btn.full{width:100%;margin-top:20px;padding:13px}
+  .btn.ghost{background:transparent;color:var(--roxo-700);border-color:var(--bege-300)}
+  .btn.ghost:hover{background:var(--roxo-100);border-color:var(--roxo-300)}
+  .btn.small{padding:8px 13px;font-size:.8rem;border-radius:9px}
+  .btn.bege{background:var(--bege-100);color:var(--roxo-900);border-color:var(--bege-200)}
+  .btn.bege:hover{background:var(--bege-200)}
+  .link{background:none;border:none;color:var(--roxo-700);font-weight:600;cursor:pointer;
+        text-decoration:underline;text-underline-offset:3px;font-size:.85rem;margin-top:16px}
+
+  /* ---------- formulários ---------- */
+  label{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+        color:var(--suave);text-align:left;margin:16px 0 6px}
+  input{
+    width:100%;padding:12px 14px;border:1px solid var(--bege-300);border-radius:10px;
+    font-size:.95rem;color:var(--texto);background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;
+  }
+  input:focus{border-color:var(--roxo-500);box-shadow:0 0 0 3px rgba(122,58,166,.15)}
+  input::placeholder{color:#b4a8bd}
+  .msg{font-size:.84rem;margin-top:14px;min-height:1.1em;font-weight:600}
+  .msg.erro{color:var(--erro)}
+  .msg.ok{color:var(--ok)}
+
+  /* ---------- telas de acesso ---------- */
+  #telaAcesso{
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:32px 16px;text-align:center;
+  }
+  .marca{
+    font-family:var(--serif);font-weight:600;font-size:clamp(2.6rem,7vw,3.8rem);
+    letter-spacing:.02em;color:var(--roxo-900);line-height:1;
+  }
+  .marca em{font-style:italic;color:var(--roxo-500);font-weight:500}
+  .marca-sub{font-size:.7rem;letter-spacing:.32em;text-transform:uppercase;color:var(--suave);margin:10px 0 30px;font-weight:600}
+  .card{
+    background:var(--branco);border:1px solid var(--bege-200);border-radius:20px;
+    padding:34px 32px;box-shadow:var(--sombra);width:100%;max-width:410px;text-align:center;
+  }
+  .card h2{font-family:var(--serif);font-size:1.7rem;font-weight:600;color:var(--roxo-900);margin-bottom:6px}
+  .card p.sub{font-size:.88rem;color:var(--suave);margin-bottom:6px;line-height:1.5}
+  .aviso{text-align:left;font-size:.9rem;line-height:1.6}
+  .aviso code{background:var(--roxo-100);padding:1px 6px;border-radius:5px;font-size:.85em}
+
+  /* ---------- topo do app ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:30;
+    background:linear-gradient(135deg,var(--ameixa),var(--roxo-900));
+    color:#fff;box-shadow:0 6px 24px -10px rgba(42,15,58,.5);
+  }
+  .topbar-in{max-width:1400px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .topbar .marca{color:#fff;font-size:1.85rem}
+  .topbar .marca em{color:var(--roxo-300)}
+  .topbar-dir{display:flex;align-items:center;gap:10px;position:relative}
+  .usuario{font-size:.8rem;color:#d9c7e8;font-weight:600;margin-right:4px}
+  .pill{
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;
+    border-radius:999px;padding:7px 14px;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .15s;
+  }
+  .pill:hover{background:rgba(255,255,255,.16)}
+  .pop{
+    position:absolute;right:0;top:calc(100% + 12px);width:310px;background:#fff;color:var(--texto);
+    border-radius:14px;padding:16px;border:1px solid var(--bege-200);box-shadow:0 20px 50px -10px rgba(42,15,58,.4);
+  }
+  .pop::before{content:"";position:absolute;top:-6px;right:96px;width:12px;height:12px;background:#fff;
+    border-left:1px solid var(--bege-200);border-top:1px solid var(--bege-200);transform:rotate(45deg)}
+  .pop label{margin-top:0}
+  .pop .linha{display:flex;gap:8px}
+
+  /* ---------- barra de ferramentas ---------- */
+  .main{max-width:1400px;margin:0 auto;padding:26px 28px 70px}
+  .toolbar{
+    display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:26px;
+  }
+  .datanav{
+    display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--bege-200);
+    border-radius:14px;padding:6px;box-shadow:var(--sombra);
+  }
+  .datanav button.nav{
+    width:36px;height:36px;border:none;background:transparent;border-radius:9px;cursor:pointer;
+    color:var(--roxo-700);font-size:1rem;font-weight:700;
+  }
+  .datanav button.nav:hover{background:var(--roxo-100)}
+  .datanav input[type=date]{
+    width:auto;border:none;font-weight:700;font-size:.95rem;padding:8px 6px;background:transparent;color:var(--roxo-900);
+  }
+  .datanav input[type=date]:focus{box-shadow:none}
+  .datanav .hoje{
+    border:none;background:var(--roxo-100);color:var(--roxo-700);font-weight:700;font-size:.78rem;
+    padding:9px 14px;border-radius:9px;cursor:pointer;
+  }
+  .datanav .hoje:hover{background:var(--roxo-300);color:#fff}
+  .toolbar-dir{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .kpi{display:flex;align-items:baseline;gap:8px}
+  .kpi span.rot{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--suave);font-weight:700}
+  .kpi strong{font-family:var(--serif);font-size:2rem;color:var(--roxo-900);font-weight:700;line-height:1}
+  .status{font-size:.76rem;font-weight:700;color:var(--suave);min-width:90px;text-align:right}
+  .status.erro{color:var(--erro)}
+  .status.ok{color:var(--ok)}
+
+  /* ---------- grade de colaboradores (esquerda → direita) ---------- */
+  .grade{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:22px;align-items:start;
+  }
+  .colab{
+    background:#fff;border:1px solid var(--bege-200);border-radius:20px;box-shadow:var(--sombra);
+    overflow:hidden;display:flex;flex-direction:column;
+  }
+  .colab-head{
+    padding:18px 18px 14px;background:linear-gradient(180deg,var(--bege-50),#fff);
+    border-bottom:1px solid var(--bege-100);
+  }
+  .colab-topo{display:flex;align-items:center;gap:10px}
+  .avatar{
+    flex:none;width:42px;height:42px;border-radius:50%;
+    background:linear-gradient(135deg,var(--roxo-500),var(--roxo-900));color:#fff;
+    display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1.25rem;
+  }
+  .colab-topo input[data-campo=nome]{
+    border:1px solid transparent;background:transparent;padding:6px 8px;font-weight:700;font-size:1.02rem;
+    color:var(--roxo-900);border-radius:8px;
+  }
+  .colab-topo input[data-campo=nome]:hover{border-color:var(--bege-200)}
+  .colab-topo input[data-campo=nome]:focus{background:#fff;border-color:var(--roxo-500)}
+  .icone{
+    flex:none;width:30px;height:30px;border:none;background:transparent;border-radius:8px;cursor:pointer;
+    color:#b3a6bd;font-size:.95rem;transition:.15s;
+  }
+  .icone:hover{background:#fbe9ed;color:var(--erro)}
+  .colab-meta{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+  .chip-data{
+    font-size:.72rem;font-weight:700;color:var(--roxo-700);background:var(--roxo-100);
+    padding:5px 11px;border-radius:999px;letter-spacing:.03em;
+  }
+  .total-colab{font-size:.74rem;color:var(--suave);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+  .total-colab b{font-family:var(--serif);font-size:1.6rem;color:var(--roxo-900);margin-left:6px;letter-spacing:0;text-transform:none}
+
+  /* lançamento */
+  .lancar{display:grid;grid-template-columns:1fr 92px;gap:8px;padding:14px 18px 6px}
+  .lancar input{padding:10px 12px;font-size:.9rem;background:var(--bege-50)}
+  .lancar input:focus{background:#fff}
+  .lancar input[type=number]{text-align:center;-moz-appearance:textfield}
+  .lancar input[type=number]::-webkit-outer-spin-button,
+  .lancar input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .dica{padding:0 18px 12px;font-size:.7rem;color:var(--suave)}
+  .dica kbd{background:var(--bege-100);border:1px solid var(--bege-300);border-radius:4px;padding:0 5px;font-family:inherit;font-weight:700;font-size:.68rem}
+
+  /* registros */
+  .tabela{list-style:none;padding:0 18px}
+  .tabela li{
+    display:grid;grid-template-columns:78px 1fr 70px 24px;gap:8px;align-items:center;
+    padding:10px 0;border-top:1px solid var(--bege-100);font-size:.87rem;
+  }
+  .tabela li.cab{
+    border-top:none;padding:6px 0;font-size:.64rem;font-weight:800;text-transform:uppercase;
+    letter-spacing:.12em;color:var(--suave);
+  }
+  .tabela .d{color:var(--suave);font-weight:600;font-size:.8rem}
+  .tabela .c{display:flex;align-items:center;gap:9px;font-weight:600;min-width:0}
+  .tabela .c span.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dot{flex:none;width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+  .tabela input.q{
+    padding:6px 4px;text-align:center;font-weight:800;font-size:.92rem;border-color:transparent;
+    background:var(--roxo-100);color:var(--roxo-900);border-radius:8px;-moz-appearance:textfield;
+  }
+  .tabela input.q::-webkit-outer-spin-button,
+  .tabela input.q::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .tabela input.q:focus{background:#fff;border-color:var(--roxo-500)}
+  .tabela .xi{
+    border:none;background:none;cursor:pointer;color:#c9bdd2;font-size:.85rem;padding:3px;border-radius:6px;
+  }
+  .tabela .xi:hover{color:var(--erro);background:#fbe9ed}
+  .vazio-dia{padding:18px;text-align:center;font-size:.84rem;color:var(--suave);font-weight:500}
+  .colab-foot{
+    margin-top:auto;padding:12px 18px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;
+    border-top:1px solid var(--bege-100);background:var(--bege-50);
+  }
+  .colab-foot .ocultos{font-size:.74rem;color:var(--suave);font-weight:600}
+  .vazio-geral{
+    grid-column:1/-1;text-align:center;padding:70px 20px;border:1.5px dashed var(--bege-300);
+    border-radius:20px;color:var(--suave);background:rgba(255,255,255,.5);
+  }
+  .vazio-geral h3{font-family:var(--serif);font-size:1.6rem;color:var(--roxo-900);margin-bottom:6px}
+
+  /* ---------- modal de relatório completo ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(42,15,58,.55);backdrop-filter:blur(3px);z-index:60;
+    display:flex;align-items:center;justify-content:center;padding:18px;
+  }
+  .modal{
+    background:#fff;border-radius:22px;width:100%;max-width:640px;max-height:90vh;display:flex;flex-direction:column;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.5);overflow:hidden;
+  }
+  .modal-head{padding:22px 26px 16px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+    background:linear-gradient(180deg,var(--bege-50),#fff);border-bottom:1px solid var(--bege-100)}
+  .modal-head h3{font-family:var(--serif);font-size:1.7rem;color:var(--roxo-900);font-weight:600;line-height:1.1}
+  .modal-head p{font-size:.78rem;color:var(--suave);font-weight:600;margin-top:4px}
+  .modal-filtros{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:14px 26px;border-bottom:1px solid var(--bege-100)}
+  .modal-filtros div{flex:1;min-width:130px}
+  .modal-filtros label{margin:0 0 5px}
+  .modal-filtros input{padding:9px 11px;font-size:.88rem}
+  .modal-corpo{padding:6px 26px 10px;overflow:auto;flex:1}
+  .grp{margin-top:16px}
+  .grp-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:6px;border-bottom:2px solid var(--roxo-100)}
+  .grp-head b{font-size:.85rem;color:var(--roxo-900)}
+  .grp-head span{font-size:.76rem;font-weight:700;color:var(--roxo-700);background:var(--roxo-100);padding:3px 10px;border-radius:999px}
+  .grp-row{display:flex;justify-content:space-between;align-items:center;padding:8px 2px;border-bottom:1px solid var(--bege-100);font-size:.88rem}
+  .grp-row .c{display:flex;align-items:center;gap:9px;font-weight:600}
+  .grp-row .n{font-weight:800}
+  .modal-foot{padding:14px 26px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;
+    border-top:1px solid var(--bege-100);background:var(--bege-50)}
+  .modal-foot .tot{font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--suave);font-weight:700}
+  .modal-foot .tot b{font-family:var(--serif);font-size:1.7rem;color:var(--roxo-900);margin-left:6px;letter-spacing:0;text-transform:none}
+  .carregando{padding:34px;text-align:center;color:var(--suave);font-weight:600;font-size:.9rem}
+
+  /* ---------- usuários ---------- */
+  .sec{padding:18px 0 6px}
+  .sec + .sec{border-top:1px solid var(--bege-100);margin-top:14px}
+  .sec h4{font-family:var(--serif);font-size:1.3rem;color:var(--roxo-900);margin-bottom:10px;font-weight:600}
+  .form-linha{display:flex;gap:8px;flex-wrap:wrap}
+  .form-linha input{flex:1;min-width:130px;padding:10px 12px;font-size:.9rem}
+  .usr-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--bege-100);flex-wrap:wrap}
+  .usr-item .avatar{width:36px;height:36px;font-size:1.05rem}
+  .usr-info{flex:1;min-width:120px;display:flex;flex-direction:column;gap:4px}
+  .usr-info b{font-size:.92rem}
+  .tag{display:inline-block;width:max-content;font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+       padding:3px 9px;border-radius:999px;background:var(--bege-100);color:var(--suave)}
+  .tag.adm{background:var(--roxo-100);color:var(--roxo-700)}
+  .usr-acoes{display:flex;gap:6px;flex-wrap:wrap}
+  .btn.perigo{background:#fff;color:var(--erro);border-color:#e9b9c2}
+  .btn.perigo:hover{background:var(--erro);color:#fff}
+  .usr-reset{flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap}
+  .usr-reset input{flex:1;min-width:150px;padding:9px 11px;font-size:.88rem}
+
+  @media(max-width:640px){
+    .topbar-in{padding:12px 16px}
+    .topbar .marca{font-size:1.5rem}
+    .usuario{display:none}
+    .main{padding:20px 16px 60px}
+    .grade{grid-template-columns:1fr}
+    .pop{width:min(310px,calc(100vw - 32px))}
+  }
+</style>
+</head>
+<body>
+
+  <!-- =============== TELAS DE ACESSO =============== -->
+  <section id="telaAcesso">
+    <h1 class="marca">lucky <em>store</em></h1>
+    <p class="marca-sub">Controle de produção</p>
+
+    <div id="avisoConfig" class="card aviso hidden">
+      <h2 style="text-align:center">Falta conectar o banco de dados</h2>
+      <p id="textoAviso" style="margin-top:10px"></p>
+    </div>
+
+    <div id="viewCarregando" class="card hidden">
+      <p class="sub" style="margin:0">Conectando...</p>
+    </div>
+
+    <div id="viewCadastro" class="card hidden">
+      <h2>Criar acesso de administrador</h2>
+      <p class="sub">Primeiro acesso: cadastre seu usuário e senha.</p>
+      <form id="formCadastro" autocomplete="off">
+        <label for="cadUser">Usuário</label>
+        <input id="cadUser" required minlength="3" maxlength="30" placeholder="ex: admin">
+        <label for="cadSenha">Senha</label>
+        <input id="cadSenha" type="password" required minlength="6" placeholder="mínimo 6 caracteres">
+        <label for="cadSenha2">Repita a senha</label>
+        <input id="cadSenha2" type="password" required>
+        <label for="cadResp">Qual o nome da escola que você se formou no ensino médio?</label>
+        <input id="cadResp" required placeholder="Usada se você esquecer a senha">
+        <button class="btn full" type="submit">Cadastrar</button>
+        <div class="msg" id="msgCad"></div>
+      </form>
+    </div>
+
+    <div id="viewLogin" class="card hidden">
+      <h2>Entrar</h2>
+      <p class="sub">Acesso restrito ao administrador.</p>
+      <form id="formLogin">
+        <label for="logUser">Usuário</label>
+        <input id="logUser" required autocomplete="username">
+        <label for="logSenha">Senha</label>
+        <input id="logSenha" type="password" required autocomplete="current-password">
+        <button class="btn full" type="submit">Entrar</button>
+        <div class="msg" id="msgLog"></div>
+      </form>
+      <button id="btnEsqueci" class="link hidden" type="button">Esqueci minha senha</button>
+    </div>
+
+    <div id="viewRecuperar" class="card hidden">
+      <h2>Recuperar senha</h2>
+      <p class="sub">Responda a pergunta cadastrada para criar uma nova senha. Vale apenas para o administrador; os demais usuários devem pedir a ele para redefinir a senha.</p>
+      <form id="formRecuperar" autocomplete="off">
+        <div id="blocoPergunta">
+          <label for="recResp">Qual o nome da escola que você se formou no ensino médio?</label>
+          <input id="recResp" required>
+          <button class="btn full" type="submit">Verificar resposta</button>
+        </div>
+        <div id="blocoNova" class="hidden">
+          <label for="novaSenha">Nova senha</label>
+          <input id="novaSenha" type="password" minlength="6" placeholder="mínimo 6 caracteres">
+          <label for="novaSenha2">Repita a nova senha</label>
+          <input id="novaSenha2" type="password">
+          <button class="btn full" type="submit">Salvar nova senha</button>
+        </div>
+        <div class="msg" id="msgRec"></div>
+      </form>
+      <button id="btnVoltar" class="link" type="button">Voltar ao login</button>
+    </div>
+  </section>
+
+  <!-- =============== PAINEL =============== -->
+  <section id="telaApp" class="hidden">
+    <header class="topbar">
+      <div class="topbar-in">
+        <h1 class="marca">lucky <em>store</em></h1>
+        <div class="topbar-dir">
+          <span class="usuario" id="nomeUsuario"></span>
+          <button class="pill" id="btnNovoColab" type="button" aria-haspopup="true" aria-expanded="false">＋ Colaborador</button>
+          <button class="pill" id="btnUsuarios" type="button">Usuários</button>
+          <button class="pill" id="btnSair" type="button">Sair</button>
+
+          <div class="pop hidden" id="popColab">
+            <form id="formAddColab" autocomplete="off">
+              <label for="novoColab">Novo colaborador</label>
+              <div class="linha">
+                <input id="novoColab" placeholder="Nome" required maxlength="80">
+                <button class="btn small" type="submit">Adicionar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="toolbar">
+        <div class="datanav">
+          <button class="nav" id="diaAnterior" type="button" title="Dia anterior" aria-label="Dia anterior">‹</button>
+          <input type="date" id="dataSel" aria-label="Data">
+          <button class="nav" id="diaSeguinte" type="button" title="Próximo dia" aria-label="Próximo dia">›</button>
+          <button class="hoje" id="btnHoje" type="button">Hoje</button>
+        </div>
+        <div class="toolbar-dir">
+          <span class="status" id="status"></span>
+          <div class="kpi"><span class="rot">Total do dia</span><strong id="totalGeral">0</strong></div>
+          <button class="btn bege small" id="btnRelatorio" type="button">Exportar dia (Excel)</button>
+        </div>
+      </div>
+
+      <div class="grade" id="lista"></div>
+    </main>
+  </section>
+
+  <!-- =============== MODAL: RELATÓRIO COMPLETO =============== -->
+  <div class="overlay hidden" id="overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+      <div class="modal-head">
+        <div>
+          <h3 id="modalTitulo">Relatório completo</h3>
+          <p id="modalSub"></p>
+        </div>
+        <button class="icone" id="fecharModal" type="button" aria-label="Fechar" style="color:var(--suave);font-size:1.1rem">✕</button>
+      </div>
+      <div class="modal-filtros">
+        <div><label for="relDe">De</label><input type="date" id="relDe"></div>
+        <div><label for="relAte">Até</label><input type="date" id="relAte"></div>
+        <button class="btn small" id="relBuscar" type="button" style="padding:11px 18px">Atualizar</button>
+      </div>
+      <div class="modal-corpo" id="relCorpo"></div>
+      <div class="modal-foot">
+        <div class="tot">Total no período<b id="relTotal">0</b></div>
+        <button class="btn bege small" id="relExcel" type="button">Baixar Excel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== MODAL: USUÁRIOS / MINHA CONTA =============== -->
+  <div class="overlay hidden" id="overlayUsr">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="usrTitulo">
+      <div class="modal-head">
+        <div>
+          <h3 id="usrTitulo">Usuários</h3>
+          <p id="usrSub"></p>
+        </div>
+        <button class="icone" id="fecharUsr" type="button" aria-label="Fechar" style="color:var(--suave);font-size:1.1rem">✕</button>
+      </div>
+      <div class="modal-corpo" id="usrCorpo"></div>
+    </div>
+  </div>
+
+<datalist id="cores">
+  <option value="Preta"><option value="Rosa"><option value="Azul"><option value="Vermelha">
+  <option value="Verde"><option value="Roxa"><option value="Branca"><option value="Amarela">
+</datalist>
+
+<script>
+/* ============================================================
+   LUCKY STORE – versão com banco de dados (Supabase)
+   ============================================================ */
+const SUPABASE_URL = 'https://enlujmnxmiuzbkzcmhgs.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Mj92DlOVYxL62FCtyi4nOQ_pk2rhpM4';
+/* ============================================================ */
+
+const $ = id => document.getElementById(id);
+const configurado = () => /^https:\/\/.+/.test(SUPABASE_URL) && SUPABASE_KEY.length > 20 && !SUPABASE_KEY.startsWith('COLE_');
+const MAX_VISIVEIS = 3;
+
+/* ---------- conversa com o banco ---------- */
+async function rpc(nome, args){
+  const headers = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY };
+  if(SUPABASE_KEY.startsWith('eyJ')) headers['Authorization'] = 'Bearer ' + SUPABASE_KEY;
+  const r = await fetch(`${SUPABASE_URL.replace(/\/+$/,'')}/rest/v1/rpc/${nome}`, {
+    method: 'POST', headers, body: JSON.stringify(args || {})
+  });
+  const txt = await r.text();
+  let json = null;
+  try{ json = txt ? JSON.parse(txt) : null; }catch(e){ json = txt; }
+  if(!r.ok){
+    const err = new Error((json && json.message) || 'erro');
+    err.codigo = (json && json.message) || '';
+    err.pgrst = json && json.code;
+    throw err;
+  }
+  return json;
+}
+
+const norm = s => String(s).trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const capitalizar = s => { s = s.trim().replace(/\s+/g,' '); return s.charAt(0).toUpperCase() + s.slice(1); };
+
+function msg(el, texto, tipo){ el.textContent = texto; el.className = 'msg ' + (tipo||''); }
+function mostrar(view){
+  ['avisoConfig','viewCarregando','viewCadastro','viewLogin','viewRecuperar'].forEach(v => $(v).classList.toggle('hidden', v !== view));
+}
+function avisar(html){ $('textoAviso').innerHTML = html; mostrar('avisoConfig'); }
+
+/* ---------- cores das escovas ---------- */
+const MAPA_CORES = {
+  'preta':'#1d1a22','preto':'#1d1a22','rosa':'#e58db0','azul':'#4672c4','vermelha':'#c0392b','vermelho':'#c0392b',
+  'verde':'#3f9b6a','roxa':'#7a3aa6','roxo':'#7a3aa6','branca':'#ffffff','branco':'#ffffff',
+  'amarela':'#e6b93a','amarelo':'#e6b93a','laranja':'#e8833a','cinza':'#8d8a94','bege':'#d9c7a8','marrom':'#7a5236',
+  'dourada':'#c9a24a','prata':'#b9b9c4','nude':'#e3c4b0','lilas':'#c3a0e0','turquesa':'#3fb5b0'
+};
+function corHex(nome){
+  const n = norm(nome);
+  if(MAPA_CORES[n]) return MAPA_CORES[n];
+  let h = 0; for(const ch of n) h = (h*31 + ch.charCodeAt(0)) % 360;
+  return `hsl(${h} 38% 58%)`;
+}
+
+/* ---------- datas ---------- */
+const pad = n => String(n).padStart(2,'0');
+const hojeISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+const somarDias = (iso, n) => { const [y,m,d] = iso.split('-').map(Number); const dt = new Date(y, m-1, d+n); return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`; };
+const br = iso => iso.split('-').reverse().join('/');
+const diasEntre = (a,b) => Math.round((new Date(b+'T00:00') - new Date(a+'T00:00')) / 86400000);
+
+/* ---------- estado ---------- */
+let token = sessionStorage.getItem('ls_token');
+let papel = sessionStorage.getItem('ls_papel') || 'usuario';
+let falhasLocais = 0;
+let dataSel = hojeISO();
+let colabs = [];          // [{id, nome, itens:[{id, cor, qtd}], busy}]
+let falhasServidor = 0;
+
+/* ---------- salvamento automático ---------- */
+const timers = new Map();
+const fila = new Map();
+function setStatus(tipo){
+  const el = $('status');
+  el.className = 'status ' + (tipo === 'erro' ? 'erro' : tipo === 'salvo' ? 'ok' : '');
+  el.textContent = tipo === 'salvando' ? 'Salvando...' : tipo === 'salvo' ? 'Salvo ✓' : tipo === 'erro' ? 'Erro ao salvar. Verifique a internet.' : '';
+}
+function cancelar(chave){ clearTimeout(timers.get(chave)); timers.delete(chave); fila.delete(chave); }
+function agendar(chave, fn){
+  clearTimeout(timers.get(chave));
+  fila.set(chave, fn);
+  setStatus('salvando');
+  timers.set(chave, setTimeout(() => executar(chave), 500));
+}
+async function executar(chave){
+  clearTimeout(timers.get(chave)); timers.delete(chave);
+  const fn = fila.get(chave); if(!fn) return;
+  fila.delete(chave);
+  try{ await fn(); if(!fila.size) setStatus('salvo'); }
+  catch(e){ tratarErro(e); }
+}
+async function descarregar(){ await Promise.all([...fila.keys()].map(executar)); }
+
+function tratarErro(e){
+  if(e && e.codigo === 'sessao_invalida'){
+    sessionStorage.removeItem('ls_token'); token = null;
+    alert('Sua sessão expirou. Entre novamente.');
+    location.reload(); return;
+  }
+  if(e && e.codigo === 'sem_permissao'){ alert('Somente o administrador pode fazer isso.'); return; }
+  setStatus('erro');
+}
+
+/* ---------- fluxo de acesso ---------- */
+async function iniciar(){
+  if(!configurado()){
+    avisar('Abra o arquivo <code>index.html</code> no VS Code e, no começo do código, troque <code>COLE_AQUI_A_URL_DO_PROJETO</code> e <code>COLE_AQUI_A_CHAVE_PUBLICA</code> pelos dados do seu projeto Supabase. Depois salve e abra de novo.');
+    return;
+  }
+  mostrar('viewCarregando');
+  let st;
+  try{ st = await rpc('status_acesso'); }
+  catch(e){
+    if(e.pgrst === 'PGRST202') avisar('O banco ainda não foi preparado. No Supabase, abra o <b>SQL Editor</b>, cole o conteúdo do arquivo <code>setup.sql</code> e clique em <b>Run</b>.');
+    else avisar('Não consegui falar com o banco de dados. Confira a URL e a chave no começo do <code>index.html</code> e a sua internet.');
+    return;
+  }
+  falhasServidor = st.falhas || 0;
+  if(!st.tem_admin){ mostrar('viewCadastro'); return; }
+  if(token){
+    try{ await abrirApp(); return; }
+    catch(e){ sessionStorage.removeItem('ls_token'); token = null; }
+  }
+  mostrar('viewLogin');
+  $('btnEsqueci').classList.toggle('hidden', falhasServidor < 3);
+}
+
+$('formCadastro').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const usuario = $('cadUser').value.trim();
+  const s1 = $('cadSenha').value, s2 = $('cadSenha2').value;
+  const resp = norm($('cadResp').value);
+  if(s1 !== s2) return msg($('msgCad'), 'As senhas não são iguais.', 'erro');
+  if(!resp) return msg($('msgCad'), 'Responda a pergunta pessoal.', 'erro');
+  try{
+    await rpc('criar_admin', { p_usuario: usuario, p_senha: s1, p_resposta: resp });
+    e.target.reset();
+    mostrar('viewLogin');
+    msg($('msgLog'), 'Acesso criado! Entre com seu usuário e senha.', 'ok');
+  }catch(err){
+    msg($('msgCad'), err.codigo === 'admin_ja_existe' ? 'Já existe um administrador cadastrado.' : 'Não foi possível cadastrar. Verifique os dados e a internet.', 'erro');
+  }
+});
+
+$('formLogin').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const u = $('logUser').value.trim();
+  try{
+    const r = await rpc('entrar', { p_usuario: u, p_senha: $('logSenha').value });
+    if(r.ok){
+      token = r.token;
+      papel = r.papel || 'usuario';
+      falhasLocais = 0;
+      sessionStorage.setItem('ls_token', token);
+      sessionStorage.setItem('ls_user', r.usuario || u);
+      sessionStorage.setItem('ls_papel', papel);
+      e.target.reset(); msg($('msgLog'), '');
+      await abrirApp();
+    }else if(r.bloqueado){
+      msg($('msgLog'), 'Muitas tentativas. Aguarde 15 minutos e tente de novo.', 'erro');
+      $('btnEsqueci').classList.remove('hidden');
+    }else{
+      falhasLocais++;
+      falhasServidor = Math.max(r.falhas || 0, falhasLocais);
+      if(falhasServidor >= 3){
+        $('btnEsqueci').classList.remove('hidden');
+        msg($('msgLog'), 'Usuário ou senha incorretos. Se você é o administrador, pode recuperar a senha abaixo; os demais usuários devem pedir a redefinição ao administrador.', 'erro');
+      }else{
+        msg($('msgLog'), 'Usuário ou senha incorretos.', 'erro');
+      }
+    }
+  }catch(err){
+    msg($('msgLog'), 'Sem conexão com o servidor. Tente de novo.', 'erro');
+  }
+});
+
+let respostaOk = null;
+$('btnEsqueci').addEventListener('click', ()=>{
+  respostaOk = null;
+  $('formRecuperar').reset();
+  $('blocoPergunta').classList.remove('hidden');
+  $('blocoNova').classList.add('hidden');
+  $('recResp').required = true;
+  $('novaSenha').required = false; $('novaSenha2').required = false;
+  msg($('msgRec'), '');
+  mostrar('viewRecuperar');
+});
+$('btnVoltar').addEventListener('click', ()=> mostrar('viewLogin'));
+
+$('formRecuperar').addEventListener('submit', async e=>{
+  e.preventDefault();
+  try{
+    if(respostaOk === null){
+      const resp = norm($('recResp').value);
+      const r = await rpc('verificar_resposta', { p_resposta: resp });
+      if(r.ok){
+        respostaOk = resp;
+        $('blocoPergunta').classList.add('hidden');
+        $('blocoNova').classList.remove('hidden');
+        $('recResp').required = false;
+        $('novaSenha').required = true; $('novaSenha2').required = true;
+        msg($('msgRec'), 'Resposta correta! Crie uma nova senha.', 'ok');
+      }else if(r.bloqueado){
+        msg($('msgRec'), 'Muitas tentativas. Aguarde 15 minutos e tente de novo.', 'erro');
+      }else{
+        msg($('msgRec'), 'Resposta incorreta.', 'erro');
+      }
+    }else{
+      const s1 = $('novaSenha').value, s2 = $('novaSenha2').value;
+      if(s1.length < 6) return msg($('msgRec'), 'A senha precisa ter ao menos 6 caracteres.', 'erro');
+      if(s1 !== s2) return msg($('msgRec'), 'As senhas não são iguais.', 'erro');
+      const r = await rpc('redefinir_senha', { p_resposta: respostaOk, p_nova: s1 });
+      if(r.ok){
+        respostaOk = null; falhasServidor = 0;
+        e.target.reset();
+        $('novaSenha').required = false; $('novaSenha2').required = false;
+        $('btnEsqueci').classList.add('hidden');
+        mostrar('viewLogin');
+        msg($('msgLog'), 'Senha alterada! Entre com a nova senha.', 'ok');
+      }else{
+        msg($('msgRec'), 'Não foi possível alterar a senha. Tente de novo.', 'erro');
+      }
+    }
+  }catch(err){
+    msg($('msgRec'), 'Sem conexão com o servidor. Tente de novo.', 'erro');
+  }
+});
+
+$('btnSair').addEventListener('click', async ()=>{
+  try{ await descarregar(); await rpc('sair', { p_token: token }); }catch(e){}
+  sessionStorage.removeItem('ls_token'); sessionStorage.removeItem('ls_user'); sessionStorage.removeItem('ls_papel');
+  location.reload();
+});
+
+/* ---------- painel de produção ---------- */
+const totalColab = c => c.itens.reduce((s,i)=> s + (Number(i.qtd)||0), 0);
+
+/* Se o mesmo dia tiver a mesma cor repetida (dados antigos), junta tudo numa linha só. */
+async function consolidar(lista){
+  for(const c of lista){
+    const grupos = new Map();
+    for(const i of c.itens){
+      const k = norm(i.cor || '');
+      if(!grupos.has(k)) grupos.set(k, []);
+      grupos.get(k).push(i);
+    }
+    const resultado = [];
+    for(const arr of grupos.values()){
+      if(arr.length === 1){ resultado.push(arr[0]); continue; }
+      const base = arr[0];
+      base.qtd = arr.reduce((s,i)=> s + (Number(i.qtd)||0), 0);
+      await rpc('atualizar_item', { p_token: token, p_id: base.id, p_cor: base.cor, p_qtd: base.qtd });
+      for(const extra of arr.slice(1)) await rpc('excluir_item', { p_token: token, p_id: extra.id });
+      resultado.push(base);
+    }
+    c.itens = resultado;
+  }
+}
+
+async function carregarDia(){
+  const r = await rpc('listar_dados', { p_token: token, p_data: dataSel });
+  colabs = r.colaboradores || [];
+  try{ await consolidar(colabs); }catch(e){ /* se falhar, só mostra como veio */ }
+  desenhar();
+}
+
+async function abrirApp(){
+  dataSel = hojeISO();
+  $('dataSel').value = dataSel;
+  await carregarDia();
+  $('telaAcesso').classList.add('hidden');
+  $('telaApp').classList.remove('hidden');
+  papel = sessionStorage.getItem('ls_papel') || 'usuario';
+  $('nomeUsuario').textContent = 'Olá, ' + (sessionStorage.getItem('ls_user') || 'admin');
+  $('btnUsuarios').textContent = papel === 'admin' ? 'Usuários' : 'Minha conta';
+  setStatus('');
+}
+
+function atualizarTotais(){
+  colabs.forEach(c=>{ const el = $('tot-'+c.id); if(el) el.textContent = totalColab(c); });
+  $('totalGeral').textContent = colabs.reduce((s,c)=> s + totalColab(c), 0);
+}
+
+function cardHTML(c){
+  const visiveis = c.itens.slice(-MAX_VISIVEIS);
+  const ocultos = c.itens.length - visiveis.length;
+  const inicial = esc((c.nome.trim().charAt(0) || '?').toUpperCase());
+  return `
+    <article class="colab" data-c="${c.id}">
+      <div class="colab-head">
+        <div class="colab-topo">
+          <div class="avatar" aria-hidden="true">${inicial}</div>
+          <input data-campo="nome" value="${esc(c.nome)}" aria-label="Nome do colaborador" maxlength="80">
+          <button class="icone" data-acao="excluirColab" title="Excluir colaborador" aria-label="Excluir colaborador">🗑</button>
+        </div>
+        <div class="colab-meta">
+          <span class="chip-data">${br(dataSel)}</span>
+          <span class="total-colab">Total<b id="tot-${c.id}">0</b></span>
+        </div>
+      </div>
+
+      <form class="lancar" data-form="lancar" autocomplete="off">
+        <input data-campo="novaCor" list="cores" placeholder="Cor da escova" maxlength="40" aria-label="Cor da escova">
+        <input data-campo="novaQtd" type="number" min="1" inputmode="numeric" placeholder="Qtd" aria-label="Quantidade">
+        <button type="submit" hidden></button>
+      </form>
+      <div class="dica">Digite a quantidade e pressione <kbd>Enter</kbd> — cores repetidas são somadas.</div>
+
+      ${visiveis.length ? `
+      <ul class="tabela">
+        <li class="cab"><span>Data</span><span>Cor</span><span style="text-align:center">Qtd</span><span></span></li>
+        ${visiveis.map(i => `
+        <li data-i="${i.id}">
+          <span class="d">${br(dataSel).slice(0,5)}</span>
+          <span class="c"><i class="dot" style="background:${corHex(i.cor)}"></i><span class="nm">${esc(i.cor || '—')}</span></span>
+          <input class="q" data-campo="qtd" type="number" min="0" inputmode="numeric" value="${Number(i.qtd)||0}" aria-label="Quantidade de ${esc(i.cor)}">
+          <button class="xi" data-acao="excluirItem" title="Remover" aria-label="Remover">✕</button>
+        </li>`).join('')}
+      </ul>` : `<div class="vazio-dia">Sem produção registrada em ${br(dataSel)}.</div>`}
+
+      <div class="colab-foot">
+        <span class="ocultos">${ocultos > 0 ? `+${ocultos} ${ocultos === 1 ? 'cor anterior' : 'cores anteriores'}` : 'Últimas 3 cores'}</span>
+        <button class="btn ghost small" data-acao="completo" type="button">Relatório completo</button>
+      </div>
+    </article>`;
+}
+
+function desenhar(){
+  const lista = $('lista');
+  if(!colabs.length){
+    lista.innerHTML = `<div class="vazio-geral"><h3>Nenhum colaborador ainda</h3><p>Use “＋ Colaborador”, no canto superior direito, para começar.</p></div>`;
+    atualizarTotais(); return;
+  }
+  lista.innerHTML = colabs.map(cardHTML).join('');
+  atualizarTotais();
+}
+
+function atualizarCard(c){
+  const el = $('lista').querySelector(`[data-c="${c.id}"]`);
+  if(!el) return desenhar();
+  const tmp = document.createElement('div'); tmp.innerHTML = cardHTML(c);
+  el.replaceWith(tmp.firstElementChild);
+  atualizarTotais();
+}
+function focarCor(c){
+  const el = $('lista').querySelector(`[data-c="${c.id}"] [data-campo="novaCor"]`);
+  if(el) el.focus();
+}
+
+/* troca de data */
+async function trocarData(nova){
+  if(!nova){ $('dataSel').value = dataSel; return; }
+  try{
+    await descarregar();
+    dataSel = nova; $('dataSel').value = nova;
+    await carregarDia();
+    setStatus('');
+  }catch(e){ tratarErro(e); }
+}
+$('dataSel').addEventListener('change', ()=> trocarData($('dataSel').value));
+$('diaAnterior').addEventListener('click', ()=> trocarData(somarDias(dataSel, -1)));
+$('diaSeguinte').addEventListener('click', ()=> trocarData(somarDias(dataSel, 1)));
+$('btnHoje').addEventListener('click', ()=> trocarData(hojeISO()));
+
+/* adicionar colaborador (botão discreto no topo) */
+function alternarPop(abrir){
+  const pop = $('popColab');
+  const mostrarPop = abrir ?? pop.classList.contains('hidden');
+  pop.classList.toggle('hidden', !mostrarPop);
+  $('btnNovoColab').setAttribute('aria-expanded', mostrarPop);
+  if(mostrarPop) setTimeout(()=> $('novoColab').focus(), 30);
+}
+$('btnNovoColab').addEventListener('click', e=>{ e.stopPropagation(); alternarPop(); });
+$('popColab').addEventListener('click', e=> e.stopPropagation());
+document.addEventListener('click', ()=> alternarPop(false));
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ alternarPop(false); fecharRelatorio(); fecharUsuarios(); } });
+
+$('formAddColab').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const nome = $('novoColab').value.trim(); if(!nome) return;
+  const btn = e.target.querySelector('button'); btn.disabled = true;
+  try{
+    const id = await rpc('add_colaborador', { p_token: token, p_nome: nome });
+    const novo = { id, nome, itens: [] };
+    colabs.push(novo);                       // entra sempre no fim = próximo da esquerda p/ direita
+    $('novoColab').value = '';
+    alternarPop(false);
+    desenhar(); setStatus('salvo');
+    focarCor(novo);
+  }catch(err){ tratarErro(err); }
+  btn.disabled = false;
+});
+
+/* lançar produção: Enter na quantidade */
+async function lancar(c, corBruta, qtd){
+  if(c.busy) return false;
+  c.busy = true;
+  try{
+    const cor = capitalizar(corBruta);
+    const chave = norm(cor);
+    const existente = c.itens.find(x => norm(x.cor || '') === chave);
+    if(existente){
+      existente.qtd = (Number(existente.qtd)||0) + qtd;
+      c.itens = c.itens.filter(x => x !== existente).concat(existente);   // vai pro fim = mais recente
+      agendar('item:'+existente.id, () => rpc('atualizar_item', { p_token: token, p_id: existente.id, p_cor: existente.cor, p_qtd: existente.qtd }));
+    }else{
+      setStatus('salvando');
+      const id = await rpc('add_item', { p_token: token, p_colab: c.id, p_data: dataSel });
+      await rpc('atualizar_item', { p_token: token, p_id: id, p_cor: cor, p_qtd: qtd });
+      c.itens.push({ id, cor, qtd });
+      setStatus('salvo');
+    }
+    return true;
+  }catch(err){ tratarErro(err); return false; }
+  finally{ c.busy = false; }
+}
+
+$('lista').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const form = e.target.closest('[data-form="lancar"]'); if(!form) return;
+  const c = colabs.find(x=>x.id === form.closest('[data-c]').dataset.c);
+  const inCor = form.querySelector('[data-campo="novaCor"]');
+  const inQtd = form.querySelector('[data-campo="novaQtd"]');
+  const qtd = parseInt(inQtd.value, 10);
+  if(!inCor.value.trim()){ inCor.focus(); return; }
+  if(!(qtd > 0)){ inQtd.focus(); return; }
+  if(await lancar(c, inCor.value, qtd)){
+    atualizarCard(c);
+    focarCor(c);
+  }
+});
+
+/* Enter na cor pula para a quantidade */
+$('lista').addEventListener('keydown', e=>{
+  if(e.key !== 'Enter') return;
+  const campo = e.target.dataset && e.target.dataset.campo;
+  if(campo === 'novaCor'){
+    const qtd = e.target.closest('form').querySelector('[data-campo="novaQtd"]');
+    if(!qtd.value){ e.preventDefault(); qtd.focus(); }
+  }else if(campo === 'nome' || campo === 'qtd'){
+    e.preventDefault(); e.target.blur();
+  }
+});
+
+/* cliques nos cards */
+$('lista').addEventListener('click', async e=>{
+  const btn = e.target.closest('[data-acao]'); if(!btn) return;
+  const cEl = btn.closest('[data-c]'); const c = colabs.find(x=>x.id === cEl.dataset.c);
+  const iEl = btn.closest('[data-i]'); const i = iEl ? c.itens.find(x=>x.id === iEl.dataset.i) : null;
+  const acao = btn.dataset.acao;
+  try{
+    if(acao === 'excluirColab'){
+      if(confirm(`Excluir "${c.nome}"?\nIsso apaga também toda a produção dele(a) em TODAS as datas.`)){
+        cancelar('nome:'+c.id); c.itens.forEach(x=>cancelar('item:'+x.id));
+        await rpc('excluir_colaborador', { p_token: token, p_id: c.id });
+        colabs = colabs.filter(x=>x.id !== c.id); desenhar(); setStatus('salvo');
+      }
+    }else if(acao === 'excluirItem'){
+      cancelar('item:'+i.id);
+      await rpc('excluir_item', { p_token: token, p_id: i.id });
+      c.itens = c.itens.filter(x=>x.id !== i.id); atualizarCard(c); setStatus('salvo');
+    }else if(acao === 'completo'){
+      abrirRelatorio(c);
+    }
+  }catch(err){ tratarErro(err); }
+});
+
+/* edição direta de nome e quantidade */
+$('lista').addEventListener('input', e=>{
+  const campo = e.target.dataset.campo;
+  if(campo !== 'nome' && campo !== 'qtd') return;
+  const c = colabs.find(x=>x.id === e.target.closest('[data-c]').dataset.c);
+  if(campo === 'nome'){
+    c.nome = e.target.value;
+    const av = e.target.closest('.colab').querySelector('.avatar');
+    if(av) av.textContent = (c.nome.trim().charAt(0) || '?').toUpperCase();
+    if(c.nome.trim()) agendar('nome:'+c.id, () => rpc('renomear_colaborador', { p_token: token, p_id: c.id, p_nome: c.nome }));
+  }else{
+    const i = c.itens.find(x=>x.id === e.target.closest('[data-i]').dataset.i);
+    i.qtd = Math.max(0, parseInt(e.target.value,10) || 0);
+    agendar('item:'+i.id, () => rpc('atualizar_item', { p_token: token, p_id: i.id, p_cor: i.cor, p_qtd: i.qtd }));
+  }
+  atualizarTotais();
+});
+
+/* ---------- relatório do dia (Excel) ---------- */
+$('btnRelatorio').addEventListener('click', async ()=>{
+  if(typeof XLSX === 'undefined') return alert('Não consegui carregar o gerador de Excel. Verifique sua internet e tente de novo.');
+  await descarregar();
+  const linhas = [['Data','Nome do colaborador','Cor da escova','Quantidade produzida','Total produzido por colaborador']];
+  let geral = 0, tem = false;
+  colabs.forEach(c=>{
+    if(!c.itens.length) return;
+    const t = totalColab(c); geral += t;
+    c.itens.forEach(i => { linhas.push([br(dataSel), c.nome, i.cor || '-', Number(i.qtd)||0, t]); tem = true; });
+  });
+  if(!tem) return alert(`Não há produção registrada em ${br(dataSel)}.`);
+  linhas.push([]);
+  linhas.push([br(dataSel), 'TOTAL GERAL', '', geral, '']);
+  const ws = XLSX.utils.aoa_to_sheet(linhas);
+  ws['!cols'] = [{wch:14},{wch:28},{wch:18},{wch:22},{wch:32}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Produção');
+  XLSX.writeFile(wb, `lucky-store-relatorio-${dataSel}.xlsx`);
+});
+
+/* ---------- relatório completo por colaborador ---------- */
+let relColab = null;
+let relLinhas = [];     // [{data, cor, qtd}]
+let relSeq = 0;
+const MAX_DIAS = 92;
+
+function abrirRelatorio(c){
+  relColab = c;
+  $('modalTitulo').textContent = c.nome;
+  const ate = dataSel;
+  $('relAte').value = ate;
+  $('relDe').value = somarDias(ate, -29);
+  $('overlay').classList.remove('hidden');
+  buscarRelatorio();
+}
+function fecharRelatorio(){ $('overlay').classList.add('hidden'); relColab = null; relSeq++; }
+$('fecharModal').addEventListener('click', fecharRelatorio);
+$('overlay').addEventListener('mousedown', e=>{ if(e.target === $('overlay')) fecharRelatorio(); });
+$('relBuscar').addEventListener('click', buscarRelatorio);
+
+async function buscarRelatorio(){
+  if(!relColab) return;
+  const de = $('relDe').value, ate = $('relAte').value;
+  const corpo = $('relCorpo');
+  if(!de || !ate || de > ate){ corpo.innerHTML = '<div class="carregando">Escolha um período válido.</div>'; return; }
+  if(diasEntre(de, ate) + 1 > MAX_DIAS){ corpo.innerHTML = `<div class="carregando">Escolha um período de no máximo ${MAX_DIAS} dias.</div>`; return; }
+  const meu = ++relSeq;
+  const colab = relColab;
+  $('modalSub').textContent = `${br(de)} a ${br(ate)}`;
+  corpo.innerHTML = '<div class="carregando">Carregando produção...</div>';
+  try{
+    await descarregar();
+    const dias = []; for(let d = de; d <= ate; d = somarDias(d, 1)) dias.push(d);
+    const linhas = [];
+    for(let k = 0; k < dias.length; k += 8){
+      const lote = dias.slice(k, k+8);
+      const resp = await Promise.all(lote.map(d => rpc('listar_dados', { p_token: token, p_data: d })));
+      if(meu !== relSeq) return;
+      resp.forEach((r, idx) => {
+        const cc = (r.colaboradores || []).find(x => x.id === colab.id);
+        if(!cc) return;
+        const soma = new Map();   // junta cores repetidas dentro do mesmo dia
+        cc.itens.forEach(i => {
+          const key = norm(i.cor || '');
+          const atual = soma.get(key);
+          if(atual) atual.qtd += Number(i.qtd)||0; else soma.set(key, { data: lote[idx], cor: i.cor || '—', qtd: Number(i.qtd)||0 });
+        });
+        soma.forEach(v => linhas.push(v));
+      });
+    }
+    if(meu !== relSeq) return;
+    relLinhas = linhas.sort((a,b)=> a.data < b.data ? 1 : a.data > b.data ? -1 : 0);
+    desenharRelatorio();
+  }catch(err){
+    if(meu !== relSeq) return;
+    if(err && err.codigo === 'sessao_invalida') return tratarErro(err);
+    corpo.innerHTML = '<div class="carregando">Não foi possível carregar. Verifique a internet.</div>';
+  }
+}
+
+function desenharRelatorio(){
+  const corpo = $('relCorpo');
+  const total = relLinhas.reduce((s,l)=> s + l.qtd, 0);
+  $('relTotal').textContent = total;
+  if(!relLinhas.length){ corpo.innerHTML = '<div class="carregando">Nenhuma produção registrada neste período.</div>'; return; }
+  const porDia = new Map();
+  relLinhas.forEach(l => { if(!porDia.has(l.data)) porDia.set(l.data, []); porDia.get(l.data).push(l); });
+  corpo.innerHTML = [...porDia.entries()].map(([d, arr]) => `
+    <div class="grp">
+      <div class="grp-head"><b>${br(d)}</b><span>${arr.reduce((s,l)=>s+l.qtd,0)} un.</span></div>
+      ${arr.map(l => `
+        <div class="grp-row">
+          <span class="c"><i class="dot" style="background:${corHex(l.cor)}"></i>${esc(l.cor)}</span>
+          <span class="n">${l.qtd}</span>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+$('relExcel').addEventListener('click', ()=>{
+  if(typeof XLSX === 'undefined') return alert('Não consegui carregar o gerador de Excel. Verifique sua internet e tente de novo.');
+  if(!relLinhas.length) return alert('Não há produção neste período.');
+  const nome = relColab ? relColab.nome : 'colaborador';
+  const dados = [['Data','Nome do colaborador','Cor da escova','Quantidade produzida']];
+  relLinhas.forEach(l => dados.push([br(l.data), nome, l.cor, l.qtd]));
+  dados.push([]);
+  dados.push(['', 'TOTAL', '', relLinhas.reduce((s,l)=>s+l.qtd,0)]);
+  const ws = XLSX.utils.aoa_to_sheet(dados);
+  ws['!cols'] = [{wch:14},{wch:28},{wch:18},{wch:22}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
+  const slug = norm(nome).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'colaborador';
+  XLSX.writeFile(wb, `lucky-store-${slug}-${$('relDe').value}_a_${$('relAte').value}.xlsx`);
+});
+
+/* ---------- usuários e conta ---------- */
+let usuarios = [];
+let resetandoId = null;
+const ERROS_USR = {
+  usuario_ja_existe: 'Já existe um usuário com esse nome.',
+  dados_invalidos: 'Confira os dados: usuário de 3 a 30 caracteres e senha com ao menos 6.',
+  nao_pode_excluir_proprio: 'Você não pode excluir o seu próprio usuário.',
+  nao_pode_excluir_admin: 'O administrador não pode ser excluído.',
+  use_alterar_senha: 'Para trocar a sua própria senha, use "Alterar minha senha".',
+  usuario_nao_encontrado: 'Usuário não encontrado.',
+  sem_permissao: 'Somente o administrador pode fazer isso.'
+};
+const textoErroUsr = e => ERROS_USR[e && e.codigo] || 'Não foi possível concluir. Verifique a internet e tente de novo.';
+const usrMsg = (t, tipo) => { const el = $('usrMsg'); if(el) msg(el, t, tipo); };
+
+function desenharUsuarios(){
+  const admin = papel === 'admin';
+  $('usrTitulo').textContent = admin ? 'Usuários' : 'Minha conta';
+  $('usrSub').textContent = admin ? 'Crie acessos e gerencie quem usa o sistema' : (sessionStorage.getItem('ls_user') || '');
+  let h = '<div class="msg" id="usrMsg"></div>';
+  if(admin){
+    h += `
+      <div class="sec">
+        <h4>Novo usuário</h4>
+        <form id="formNovoUsr" autocomplete="off">
+          <div class="form-linha">
+            <input id="nuNome" placeholder="Usuário" required minlength="3" maxlength="30">
+            <input id="nuSenha" type="text" placeholder="Senha inicial (mín. 6)" required minlength="6" autocomplete="off">
+            <button class="btn small" type="submit">Criar</button>
+          </div>
+        </form>
+      </div>
+      <div class="sec">
+        <h4>Acessos</h4>
+        ${usuarios.map(u => `
+          <div class="usr-item" data-u="${u.id}">
+            <div class="avatar" aria-hidden="true">${esc((u.usuario.charAt(0) || '?').toUpperCase())}</div>
+            <div class="usr-info">
+              <b>${esc(u.usuario)}${u.eu ? ' (você)' : ''}</b>
+              <span class="tag ${u.papel === 'admin' ? 'adm' : ''}">${u.papel === 'admin' ? 'Administrador' : 'Usuário'}</span>
+            </div>
+            ${u.papel === 'admin' ? '' : `
+            <div class="usr-acoes">
+              <button class="btn ghost small" data-acao="abrirReset" type="button">Redefinir senha</button>
+              <button class="btn perigo small" data-acao="excluirUsr" type="button">Excluir</button>
+            </div>`}
+            ${resetandoId === u.id ? `
+            <form class="usr-reset" data-form="reset" autocomplete="off">
+              <input type="text" placeholder="Nova senha (mín. 6)" minlength="6" required autocomplete="off">
+              <button class="btn small" type="submit">Salvar</button>
+              <button class="btn ghost small" data-acao="cancelarReset" type="button">Cancelar</button>
+            </form>` : ''}
+          </div>`).join('')}
+      </div>`;
+  }
+  h += `
+    <div class="sec">
+      <h4>Alterar minha senha</h4>
+      <form id="formMinhaSenha" autocomplete="off">
+        <div class="form-linha">
+          <input id="msAtual" type="password" placeholder="Senha atual" required autocomplete="current-password">
+          <input id="msNova" type="password" placeholder="Nova senha (mín. 6)" required minlength="6" autocomplete="new-password">
+          <button class="btn small" type="submit">Salvar</button>
+        </div>
+      </form>
+    </div>`;
+  $('usrCorpo').innerHTML = h;
+  if(resetandoId){ const el = $('usrCorpo').querySelector('.usr-reset input'); if(el) el.focus(); }
+}
+
+async function abrirUsuarios(){
+  resetandoId = null;
+  $('overlayUsr').classList.remove('hidden');
+  try{
+    if(papel === 'admin') usuarios = await rpc('listar_usuarios', { p_token: token });
+    desenharUsuarios();
+  }catch(err){ fecharUsuarios(); tratarErro(err); }
+}
+function fecharUsuarios(){ $('overlayUsr').classList.add('hidden'); }
+$('btnUsuarios').addEventListener('click', abrirUsuarios);
+$('fecharUsr').addEventListener('click', fecharUsuarios);
+$('overlayUsr').addEventListener('mousedown', e=>{ if(e.target === $('overlayUsr')) fecharUsuarios(); });
+
+$('usrCorpo').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const f = e.target;
+  try{
+    if(f.id === 'formNovoUsr'){
+      const nome = $('nuNome').value.trim();
+      await rpc('criar_usuario', { p_token: token, p_usuario: nome, p_senha: $('nuSenha').value });
+      usuarios = await rpc('listar_usuarios', { p_token: token });
+      desenharUsuarios(); usrMsg(`Usuário "${nome}" criado. Passe a senha inicial para a pessoa.`, 'ok');
+    }else if(f.dataset.form === 'reset'){
+      const id = f.closest('[data-u]').dataset.u;
+      const nome = (usuarios.find(x => x.id === id) || {}).usuario || '';
+      await rpc('resetar_senha_usuario', { p_token: token, p_id: id, p_nova: f.querySelector('input').value });
+      resetandoId = null; desenharUsuarios();
+      usrMsg(`Senha de "${nome}" redefinida. Ele(a) foi desconectado(a) e deve entrar com a nova senha.`, 'ok');
+    }else if(f.id === 'formMinhaSenha'){
+      const r = await rpc('alterar_minha_senha', { p_token: token, p_atual: $('msAtual').value, p_nova: $('msNova').value });
+      if(r.ok){ f.reset(); usrMsg('Senha alterada com sucesso.', 'ok'); }
+      else usrMsg('A senha atual está incorreta.', 'erro');
+    }
+  }catch(err){
+    if(err && err.codigo === 'sessao_invalida') return tratarErro(err);
+    usrMsg(textoErroUsr(err), 'erro');
+  }
+});
+
+$('usrCorpo').addEventListener('click', async e=>{
+  const btn = e.target.closest('[data-acao]'); if(!btn) return;
+  const item = btn.closest('[data-u]'); const id = item && item.dataset.u;
+  const u = usuarios.find(x => x.id === id);
+  try{
+    if(btn.dataset.acao === 'abrirReset'){ resetandoId = id; desenharUsuarios(); }
+    else if(btn.dataset.acao === 'cancelarReset'){ resetandoId = null; desenharUsuarios(); }
+    else if(btn.dataset.acao === 'excluirUsr'){
+      if(!confirm(`Excluir o usuário "${u.usuario}"?\nEle(a) perde o acesso na hora. A produção registrada não é apagada.`)) return;
+      await rpc('excluir_usuario', { p_token: token, p_id: id });
+      usuarios = await rpc('listar_usuarios', { p_token: token });
+      resetandoId = null; desenharUsuarios(); usrMsg(`Usuário "${u.usuario}" excluído.`, 'ok');
+    }
+  }catch(err){
+    if(err && err.codigo === 'sessao_invalida') return tratarErro(err);
+    usrMsg(textoErroUsr(err), 'erro');
+  }
+});
+
+iniciar();
+</script>
+</body>
+</html>
